@@ -7,18 +7,20 @@ package com.sobey.exportExcel.model;
  * 时长
  * 导入时间
  */
-public class MateData {
+public class MetaData {
 
-    private String materialName;
+    private String name;
     private String duration;
     private String importDate;
 
-    public String getMaterialName() {
-        return materialName;
+    public MetaData() {}
+
+    public String getName() {
+        return name;
     }
 
-    public void setMaterialName(String materialName) {
-        this.materialName = materialName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getDuration() {

@@ -1,12 +1,17 @@
 package com.sobey.exportExcel.model;
 
 import java.io.FileOutputStream;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.apache.poi.hssf.usermodel.*;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.springframework.util.StringUtils;
+
+import com.sobey.exportExcel.util.ExcelFileUtil;
+import com.sobey.exportExcel.util.ExcelViewJudge;
 
 /**
  * Created by lijunhong on 17/3/28.
@@ -38,11 +43,11 @@ public class ExcelModel {
     public ExcelModel(String fileName,String path){
         this.path = path;
         this.fileName = fileName;
-//        if(ExcelFileUtils.isWindosSystem){
-//            this.filePath = path + "/" +fileName;
-//        }else {
-//            this.filePath = path + fileName;
-//        }
+        if(ExcelFileUtil.isWindosSystem){
+            this.filePath = path + "/" +fileName;
+        }else {
+            this.filePath = path + fileName;
+        }
         this.filePath = path + "/" + fileName;
 
 
@@ -69,7 +74,7 @@ public class ExcelModel {
         CellRangeAddress range = null;
         //设置表名
         row = sheet.createRow(0);
-        range = new CellRangeAddress(0,0,0,4);
+        range = new CellRangeAddress(0,0,0,3);
         sheet.addMergedRegion(range);
         cell = row.createCell(0);
         cell.setCellValue("检索素材信息");
@@ -83,6 +88,11 @@ public class ExcelModel {
 
         //设置第一行的元数据
         row = sheet.createRow(1);
+        cell = row.createCell(0);
+        cell.setCellValue("序号");
+        cell.setCellStyle(style);
+
+
         cell = row.createCell(1);
         cell.setCellValue("素材名");
         cell.setCellStyle(style);
@@ -101,9 +111,42 @@ public class ExcelModel {
     }
 
 
-    public int createExcelTableBody(){
+    public int createExcelTableBody(List<List<MetaData>> metaDataList) {
+        int index = 0;
+        for (List<MetaData> metaDatas : metaDataList) {
+            for (MetaData metaData : metaDatas) {
+                HSSFRow row = sheet.createRow(index+2);
+                HSSFCell cell = null;
 
-       return 0;
+                //设置序号
+                cell = row.createCell(0);
+                cell.setCellValue(index+1);
+                cell.setCellStyle(getHssfCellStyle());
+
+                //设置素材名
+                cell = row.createCell(1);
+                cell.setCellValue(metaData.getName());
+                cell.setCellStyle(getHssfCellStyle());
+
+                //设置时长
+                cell = row.createCell(2);
+                if(!StringUtils.isEmpty(metaData.getDuration())){
+                    long l100 = Long.parseLong(metaData.getDuration());
+                    String durationStr = ExcelViewJudge.getTimeLength(l100);
+                    cell.setCellValue(durationStr);
+                }
+                cell.setCellStyle(getHssfCellStyle());
+
+                //设置入库时间
+                cell = row.createCell(3);
+                cell.setCellValue(metaData.getImportDate());
+                cell.setCellStyle(getHssfCellStyle());
+                index++;
+            }
+
+        }
+        writerExcel();
+       return index;
     }
 
     /**
@@ -130,7 +173,7 @@ public class ExcelModel {
             out.close();
         } catch (Exception e) {
             e.printStackTrace();
-            if(logger.isErrorEnabled()) logger.error("生成主题一览Excel文件出现错误"+e);
+            if(logger.isErrorEnabled()) logger.error("Create Excel file exception:"+e);
         }
     }
 
